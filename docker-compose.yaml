@@ -38,7 +38,7 @@ services:
     image: buoy_retriever_backend
     command: "python manage.py runserver 0:8080"
     volumes:
-      - ./backend:/home/uwsgi:cached
+      - ./backend:/home/uwsgi/app:cached
       - /home/uwsgi/.pixi
       - ./docker-data/media:/media:cached
       - django_static:/static:rw
