@@ -3,6 +3,7 @@ FROM ghcr.io/prefix-dev/pixi:0.66.0 AS base
 # Gather required base utils
 RUN apt-get update && apt-get install -y \
         curl \
+        media-types \
         && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
