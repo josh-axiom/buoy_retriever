@@ -62,6 +62,8 @@ services:
       POSTGRES_OPTIONS: "-c search_path=buoy_retriever"
       # CACHE_HOST: cache
       # QUEUE_HOST: queue
+      # Allow for setting additional CSRF trusted origins
+      # DJANGO_CSRF_TRUSTED_ORIGINS: "http://localhost:54321"
     depends_on:
       db:
         condition: service_healthy
