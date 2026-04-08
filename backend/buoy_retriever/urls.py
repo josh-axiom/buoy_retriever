@@ -24,6 +24,7 @@ from allauth.account.views import (
 )
 
 from .api import api
+from .views import get_asset_doc_list
 
 prefix = "backend/"
 
@@ -31,6 +32,8 @@ urlpatterns = [
     path(f"{prefix}admin/", admin.site.urls),
     path(f"{prefix}api/", api.urls),
     path(f"{prefix}health/", include("health_check.urls")),  # health check endpoints
+    # proof of concept view for retrieving asset documents from buoy_retriever
+    path(f"{prefix}asset_docs/",  get_asset_doc_list, name="get_asset_doc_list"),
     # path(prefix, include("django.contrib.auth.urls")),
     path(f"{prefix}accounts/signup/", signup, name="account_signup"),
     path(f"{prefix}accounts/login/", login, name="account_login"),
