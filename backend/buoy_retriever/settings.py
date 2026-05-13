@@ -101,6 +101,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "health_check",
     "health_check.db",
+    'ninja_jwt',
     "corsheaders",
     "buoy_retriever",
     "guardian",
@@ -232,6 +233,19 @@ AUTHENTICATION_BACKENDS = (
     # `allauth` specific authentication methods
     'allauth.account.auth_backends.AuthenticationBackend',
 )
+
+NINJA_JWT = {
+    'ALGORITHM': 'RSA',
+    'JWK_URL': os.environ.get( "OIDC_NINJA_JWK_URL", None ),
+    # TODO: Audience,
+    'LEEWAY': 0,
+    # TODO: override?
+    'USER_AUTHENTICATION_RULE': 'ninja_jwt.authentication.default_user_authentication_rule',
+
+    # 'AUTH_TOKEN_CLASSES': ('ninja_jwt.tokens.AccessToken',),
+    # 'TOKEN_TYPE_CLAIM': 'token_type',
+    # 'TOKEN_USER_CLASS': 'ninja_jwt.models.TokenUser',
+}
 
 
 # Internationalization
