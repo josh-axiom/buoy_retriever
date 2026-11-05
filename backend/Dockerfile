@@ -7,6 +7,14 @@ RUN apt-get update && apt-get install -y \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Gather required base utils
+RUN apt-get update && apt-get install -y \
+        curl \
+        media-types \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 # Output logging faster
 ENV PYTHONUNBUFFERED=1
 # Show deprecation warnings https://docs.djangoproject.com/en/2.2/howto/upgrade-version/#resolving-deprecation-warnings
@@ -54,11 +62,12 @@ ENTRYPOINT ["/support/shell-hook.sh"]
 HEALTHCHECK --interval=30s --timeout=10s --start-period=20s \
     CMD /usr/bin/curl -D- -o /dev/null --silent --fail "http://localhost:8080/backend/health/"
 
-
 FROM base AS develop
 
+FROM base AS deploy
 
-# FROM base AS deploy
-
-# COPY --chown=${USER}:${USER} . ${USER_HOME}
-# CMD ["uwsgi"l]
+CMD python manage.py collectstatic --noinput \
+    && uwsgi --http 0.0.0.0:8080 \
+        --module buoy_retriever.wsgi \
+        --static-map /backend/static=/static \
+        --master --log-master --processes 4 --threads 2
