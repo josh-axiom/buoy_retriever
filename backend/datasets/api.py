@@ -192,7 +192,7 @@ def post_config(request: HttpRequest, id: int, payload: DatasetConfigPostSchema)
     """Update a specific dataset config by ID"""
     config = get_object_or_404(DatasetConfig, id=id)
 
-    which_user = getattr( request, 'auth', request.user )
+    which_user = getattr( request, 'auth', False ) or request.user
 
     if not config.dataset.can_edit(which_user):
         raise AuthorizationError(
