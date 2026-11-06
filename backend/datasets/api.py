@@ -4,7 +4,7 @@ from guardian.core import ObjectPermissionChecker
 from guardian.shortcuts import get_objects_for_user
 from ninja import ModelSchema, Router, Schema
 from ninja.errors import AuthorizationError
-from ninja.security import django_auth
+from ninja.security import APIKeyHeader, django_auth
 from buoy_retriever.auth import JWTAuthCreateUser
 
 from pipelines.api import pipeline_api_key_auth
@@ -12,12 +12,35 @@ from pipelines.models import Pipeline
 
 from .models import Dataset, DatasetConfig
 
+
+class ExternalAssetApiKeyAuth(APIKeyHeader):
+    """API Key header authentication for pipeline API keys"""
+
+    param_name = "X-API-KEY"
+
+    def authenticate(self, request: HttpRequest, key: str):
+
+        # TODO: For the time being, reuse the pipeline API keys
+        from pipelines.models import PipelineApiKey
+
+        try:
+            api_key = PipelineApiKey.objects.get(key_value=key, is_active=True)
+            # Returns the *user*, not the API key
+            return api_key.user
+        except PipelineApiKey.DoesNotExist:
+            return None
+
+
+external_asset_manager = ExternalAssetApiKeyAuth()
+
 DJANGO_OR_JWT_AUTH = (
     django_auth,
+    external_asset_manager,
     JWTAuthCreateUser(),
 )
 PIPELINE_OR_JWT_AUTH = (
     pipeline_api_key_auth,
+    external_asset_manager,
     JWTAuthCreateUser(),
 )
 
@@ -169,7 +192,9 @@ def post_config(request: HttpRequest, id: int, payload: DatasetConfigPostSchema)
     """Update a specific dataset config by ID"""
     config = get_object_or_404(DatasetConfig, id=id)
 
-    if not config.dataset.can_edit(request.user):
+    which_user = getattr( request, 'auth', request.user )
+
+    if not config.dataset.can_edit(which_user):
         raise AuthorizationError(
             "You do not have permission to edit this dataset config.",
         )
